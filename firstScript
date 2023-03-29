@@ -1,0 +1,90 @@
+/**** Start of imports. If edited, may not auto-convert in the playground. ****/
+var precip = ee.ImageCollection("UCSB-CHG/CHIRPS/DAILY"),
+    elevation = ee.Image("USGS/SRTMGL1_003"),
+    landsat = ee.ImageCollection("LANDSAT/LC08/C01/T1_TOA"),
+    himalayas = /* color: #98ff00 */ee.Geometry.Polygon(
+        [[[73.7815942548195, 35.465573445083905],
+          [73.4300317548195, 34.4209397444436],
+          [73.5179223798195, 33.10578856111989],
+          [75.3636255048195, 32.29222196762306],
+          [77.2972192548195, 30.340149816607035],
+          [77.5608911298195, 29.76960333276824],
+          [80.0657739423195, 28.580160925462458],
+          [81.1204614423195, 30.188325816451158]]]);
+/***** End of imports. If edited, may not auto-convert in the playground. *****/
+
+
+var filtered_precip = precip.filterDate('2010-01-01','2022-01-01').filterBounds(himalayas);
+var clipped_precip = filtered_precip.mean().clip(himalayas);
+
+//Map.addLayer(clipped_precip, {min:0, max:20, palette: ['white', 'blue']}, 'Precip');
+
+var slope = ee.Terrain.slope(elevation);
+var clipped_slope = slope.clip(himalayas);
+var clipped_elevation = elevation.clip(himalayas);
+
+//Map.addLayer(clipped_slope, {min:0, max:75, palette:['green', 'yellow', 'red']}, 'slope');
+//Map.addLayer(clipped_elevation, {min:1000, max:6500, palette:['white', 'black']}, 'elevation');
+
+// calculate ndvi amd ndwi from sentinel-2
+var filtered_landsat = landsat.filterDate('2010-01-01','2022-01-01').filterBounds(himalayas).mean();
+var red = filtered_landsat.select('B4');
+var nir = filtered_landsat.select('B5');
+var swir = filtered_landsat.select('B6');
+var ndvi = nir.subtract(red).divide(nir.add(red)).clip(himalayas);
+var ndwi = nir.subtract(swir).divide(nir.add(swir)).clip(himalayas);
+// add ndvi layer
+//Map.addLayer(ndvi, {palette:['yellow', 'green']}, 'ndvi');
+//Map.addLayer(ndwi, {palette:['white', 'blue']}, 'ndwi');
+
+Export.image.toDrive({
+  image: clipped_precip,
+  description: 'precip',
+  folder: 'landslideProject',
+  scale: 100,
+  region: himalayas,
+  maxPixels: 1e13
+});
+
+Export.image.toDrive({
+  image: clipped_slope,
+  description: 'slope',
+  folder: 'landslideProject',
+  scale: 100,
+  region: himalayas,
+  maxPixels: 1e13
+});
+
+Export.image.toDrive({
+  image: clipped_elevation,
+  description: 'elevation',
+  folder: 'landslideProject',
+  scale: 100,
+  region: himalayas,
+  maxPixels: 1e13
+});
+
+Export.image.toDrive({
+  image: ndvi,
+  description: 'ndvi',
+  folder: 'landslideProject',
+  scale: 100,
+  region: himalayas,
+  maxPixels: 1e13
+});
+
+Export.image.toDrive({
+  image: ndwi,
+  description: 'ndwi',
+  folder: 'landslideProject',
+  scale: 100,
+  region: himalayas,
+  maxPixels: 1e13
+});
+
+Export.table.toDrive({
+  collection: ee.FeatureCollection(himalayas),
+  description: 'himalayas_shapefile',
+  folder: 'landslideProject',
+  fileFormat: 'SHP'
+});

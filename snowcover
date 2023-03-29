@@ -1,0 +1,20 @@
+/**** Start of imports. If edited, may not auto-convert in the playground. ****/
+var snow = ee.ImageCollection("MODIS/006/MOD10A1"),
+    himalayas = 
+    /* color: #d63000 */
+    /* shown: false */
+    ee.Geometry.Polygon(
+        [[[73.7815942548195, 35.465573445083905],
+          [73.4300317548195, 34.4209397444436],
+          [73.5179223798195, 33.10578856111989],
+          [75.3636255048195, 32.29222196762306],
+          [77.2972192548195, 30.340149816607035],
+          [77.5608911298195, 29.76960333276824],
+          [80.0657739423195, 28.580160925462458],
+          [81.1204614423195, 30.188325816451158],
+          [73.7815942548195, 35.465573445083905]]]);
+/***** End of imports. If edited, may not auto-convert in the playground. *****/
+
+var snowcover = snow.select('NDSI_Snow_Cover').filterDate('2010-01-01', '2022-01-01').filterBounds(himalayas).mean().clip(himalayas);
+Map.addLayer(snowcover, {palette:['white', 'red']}, 'snowcover');
+Export.image.toDrive({image: snowcover, description:'snowcover', region:himalayas, folder:'landslideProject', scale: 100, fileFormat: 'GeoTIFF'})
