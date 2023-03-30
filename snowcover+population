@@ -22,3 +22,11 @@ Export.image.toDrive({image: snowcover, description:'snowcover', region:himalaya
 var pop = population.select('population').filterDate('2010-01-01', '2022-01-01').filterBounds(himalayas).max().clip(himalayas)
 Map.addLayer(pop, {palette:['white', 'black']}, 'population');
 Export.image.toDrive({image: pop, description:'population', region:himalayas, folder:'landslideProject', scale: 100, fileFormat: 'GeoTIFF'})
+
+var land = landcover.select('discrete_classification').filterDate('2010-01-01','2021-01-01').median().clip(himalayas);
+Map.addLayer(land, {}, 'landcover');
+Export.image.toDrive({image: land, description:'landcover', region:himalayas, folder:'landslideProject', scale: 100, fileFormat: 'GeoTIFF'});
+
+var aspect = srtm.select('constant').clip(himalayas)
+Map.addLayer(aspect, {}, 'aspect')
+Export.image.toDrive({image: aspect, description:'aspect', region:himalayas, folder:'landslideProject', scale: 100, fileFormat: 'GeoTIFF'});
