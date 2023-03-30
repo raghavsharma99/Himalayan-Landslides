@@ -18,3 +18,7 @@ var snow = ee.ImageCollection("MODIS/006/MOD10A1"),
 var snowcover = snow.select('NDSI_Snow_Cover').filterDate('2010-01-01', '2022-01-01').filterBounds(himalayas).mean().clip(himalayas);
 Map.addLayer(snowcover, {palette:['white', 'red']}, 'snowcover');
 Export.image.toDrive({image: snowcover, description:'snowcover', region:himalayas, folder:'landslideProject', scale: 100, fileFormat: 'GeoTIFF'})
+
+var pop = population.select('population').filterDate('2010-01-01', '2022-01-01').filterBounds(himalayas).max().clip(himalayas)
+Map.addLayer(pop, {palette:['white', 'black']}, 'population');
+Export.image.toDrive({image: pop, description:'population', region:himalayas, folder:'landslideProject', scale: 100, fileFormat: 'GeoTIFF'})
